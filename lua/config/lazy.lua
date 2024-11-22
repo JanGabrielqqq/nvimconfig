@@ -19,6 +19,8 @@ require("lazy").setup({
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
     -- import/override with your plugins
+    { import = "lazyvim.plugins.extras.editor.outline" },
+    { import = "lazyvim.plugins.extras.editor.navic" },
     { import = "plugins" },
   },
   defaults = {
@@ -30,7 +32,6 @@ require("lazy").setup({
     version = false, -- always use the latest git commit
     -- version = "*", -- try installing the latest stable version for plugins that support semver
   },
-  install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
     enabled = true, -- check for plugin updates periodically
     notify = false, -- notify on update
@@ -51,3 +52,46 @@ require("lazy").setup({
     },
   },
 })
+
+local lspconfig = require("lspconfig")
+lspconfig.tailwindcss.setup({
+  settings = {
+    tailwindCSS = {
+      experimental = {
+        classRegex = {
+          -- "cx\\(([^)]*)\\)",
+          -- "[\"'`]([^\"'`]*).*?[\"'`]",
+          -- Match Tailwind classes within `clsx(...)` and `twMerge(...)`
+          { "clsx%(([^%)]*)%)", "%1" }, -- Matches clsx(...)
+          { "twMerge%(([^%)]*)%)", "%1" }, -- Matches twMerge(...)
+        },
+      },
+      classAttributes = {
+        "class",
+        "className",
+        "ngClass",
+        "style",
+        "styles",
+        "base",
+        "buttonVariants",
+        "tv",
+        "twMerge",
+        "cx",
+        "clsx",
+      },
+    },
+  },
+})
+
+lspconfig.denols.setup({
+  root_dir = function(fname)
+    -- Enable Deno in projects with a `deno.json` or `deno.jsonc` file
+    return lspconfig.util.root_pattern("deno.json", "deno.jsonc")(fname)
+  end,
+  on_attach = function(client)
+    -- Disable formatting if not a Deno project
+    client.server_capabilities.documentFormattingProvider = false
+  end,
+})
+
+require("nvim-treesitter.install").prefer_git = true
