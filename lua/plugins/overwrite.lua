@@ -33,7 +33,8 @@ d8888b. d8888b.  .d88b.  db    db d88888b d8888b. d8888b. .d8888.    db  .d88b. 
           keys = {
             { icon = " ", key = "r", desc = "Restore Session", section = "session" },
             { icon = " ", key = "s", desc = "Open Session", action = "<leader>qS" },
-            { icon = " ", key = "n", desc = "New File", action = ":ene | startinsert" },
+            { icon = "󰐅 ", key = "1", desc = "Update Treesitter", action = ":TSUpdate" },
+            { icon = "󰚰 ", key = "2", desc = "Update  Mason", action = ":MasonUpdate" },
             {
               icon = " ",
               key = "c",
