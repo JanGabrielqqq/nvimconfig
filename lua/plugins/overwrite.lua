@@ -295,7 +295,6 @@ d8888b. d8888b.  .d88b.  db    db d88888b d8888b. d8888b. .d8888.    db  .d88b. 
         "stylua",
         "tailwindcss-language-server",
         "typescript-language-server",
-        "vtsls",
         "shfmt",
       },
     },
