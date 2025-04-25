@@ -1,0 +1,39 @@
+
+#!/bin/bash
+
+# Default values for arguments
+SESSION_NAME=${1:-my_session} # Use the first argument or default to 'my_session'
+CWD=${2:-$HOME}               # Use the second argument or default to $HOME
+
+# Check if the session already exists
+if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+  echo "Session '$SESSION_NAME' already exists. Attaching to it."
+  tmux attach -t "$SESSION_NAME"
+  exit 0
+fi
+
+CWD=$(fdfind . 'Projects' --type d | fzf)
+
+if [-z "$dir"]; then
+  echo "Directory not found. Exiting."
+  exit 1
+fi
+
+# Start a new tmux session with the specified name, but don't attach yet
+tmux new-session -d -s "$SESSION_NAME" -c "$CWD"
+
+# Window 1: Run nvim
+tmux rename-window -t "$SESSION_NAME:1" "Editor"
+tmux send-keys -t "$SESSION_NAME:1" "zsh -c 'nvim'" C-m
+
+# Window 2: Run lazygit
+tmux new-window -t "$SESSION_NAME" -n "Git" -c "$CWD"
+tmux send-keys -t "$SESSION_NAME:2" "zsh -c 'lazygit'" C-m
+
+# Window 3: Split horizontally
+tmux new-window -t "$SESSION_NAME" -n "Split" -c "$CWD"
+tmux split-window -v -t "$SESSION_NAME:3" -c "$CWD"
+
+# Attach to the tmux session
+tmux attach -t "$SESSION_NAME"
+tmux send-keys -t "$SESSION_NAME:3.2" "zsh -c 'cd $CWD'" C-m
