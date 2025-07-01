@@ -1,0 +1,38 @@
+#!/bin/sh
+
+NEW_DIR=${1}
+
+if [ -z "$NEW_DIR" ]; then
+  echo "Invalid Arguent"
+  exit 1
+fi
+
+PROJECTDIR="$HOME/Projects"
+
+newDirPath="$PROJECTDIR/$NEW_DIR"
+
+# Create the directory if it doesn't exist
+if [ ! -d "$newDirPath" ]; then
+  mkdir -p "$newDirPath"
+
+  # Start a new tmux session with the specified name, but don't attach yet
+  tmux new-session -d -s "$NEW_DIR" -c "$newDirPath"
+
+  # Window 1: Run nvim
+  tmux rename-window -t "$NEW_DIR:1" "Editor"
+  tmux send-keys -t "$NEW_DIR:1" "zsh -c 'nvim'" C-m
+
+  # Window 2: Run lazygit
+  tmux new-window -t "$NEW_DIR" -n "Git" -c "$newDirPath"
+  tmux send-keys -t "$NEW_DIR:2" "zsh -c 'lazygit'" C-m
+
+  # Window 3: Split horizontally
+  tmux new-window -t "$NEW_DIR" -n "Split" -c "$newDirPath"
+  tmux split-window -v -t "$NEW_DIR:3" -c "$newDirPath"
+
+  # Attach to the tmux session
+  tmux attach -t "$NEW_DIR"
+  tmux send-keys -t "$NEW_DIR:3.2" "zsh -c 'cd $newDirPath'" C-m
+else
+  echo "Directory already exists: $newDirPath"
+fi

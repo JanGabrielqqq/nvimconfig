@@ -11,10 +11,14 @@ if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
   tmux attach -t "$SESSION_NAME"
   exit 0
 fi
+PROJECTS_DIR="$HOME/Projects"
+dir_name=$(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d |
+  while read -r line; do basename "$line"; done |
+  fzf --prompt="Select project: ")
 
-CWD=$(fdfind . 'Projects' --type d | fzf)
+CWD="$PROJECTS_DIR/$dir_name"
 
-if [-z "$dir"]; then
+if [ -z "$CWD" ]; then
   echo "Directory not found. Exiting."
   exit 1
 fi
@@ -37,3 +41,4 @@ tmux split-window -v -t "$SESSION_NAME:3" -c "$CWD"
 # Attach to the tmux session
 tmux attach -t "$SESSION_NAME"
 tmux send-keys -t "$SESSION_NAME:3.2" "zsh -c 'cd $CWD'" C-m
+

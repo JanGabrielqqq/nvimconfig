@@ -70,7 +70,7 @@ ZSH_THEME="robbyrussell"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-bat)
+plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -107,6 +107,10 @@ alias tmconf="nvim ~/.config/tmux/tmux.conf"
 alias cls="clear"
 alias cc="clear"
 
+tn() {
+  ~/tnsesh.sh "$1"
+}
+
 t() {
     # local dir
     # dir=$(fdfind . 'Projects' --type d | fzf)
@@ -120,7 +124,7 @@ t() {
 
 ddd() {
     local dir
-    dir=$(fdfind . 'Projects' --type d | fzf)
+    dir=$(fdfind --type d . ~/Projects | fzf)
     if [[ -n "$dir" ]]; then
         cd "$dir" || echo "Failed to cd to $dir"
     else
