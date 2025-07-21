@@ -30,6 +30,9 @@ if [ ! -d "$newDirPath" ]; then
   tmux new-window -t "$NEW_DIR" -n "Split" -c "$newDirPath"
   tmux split-window -v -t "$NEW_DIR:3" -c "$newDirPath"
 
+  # Window 4: Claude
+  tmux new-window -t "$NEW_DIR" -n "claude" -c "$newDirPath"
+
   # Attach to the tmux session
   tmux attach -t "$NEW_DIR"
   tmux send-keys -t "$NEW_DIR:3.2" "zsh -c 'cd $newDirPath'" C-m

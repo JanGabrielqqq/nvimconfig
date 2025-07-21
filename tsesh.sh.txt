@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Default values for arguments
@@ -38,7 +37,9 @@ tmux send-keys -t "$SESSION_NAME:2" "zsh -c 'lazygit'" C-m
 tmux new-window -t "$SESSION_NAME" -n "Split" -c "$CWD"
 tmux split-window -v -t "$SESSION_NAME:3" -c "$CWD"
 
+# Window 4: Claude
+tmux new-window -t "$SESSION_NAME" -n "claude" -c "$CWD"
+
 # Attach to the tmux session
 tmux attach -t "$SESSION_NAME"
 tmux send-keys -t "$SESSION_NAME:3.2" "zsh -c 'cd $CWD'" C-m
-

@@ -132,8 +132,37 @@ ddd() {
     fi
 }
 
+confpush() {
+    local nvim_config_dir="$HOME/.config/nvim"
+    
+    # Create nvim config directory if it doesn't exist
+    mkdir -p "$nvim_config_dir"
+    
+    # Copy and rename files
+    cp "$HOME/.zshrc" "$nvim_config_dir/zshrc.txt"
+    cp "$HOME/.tmux.conf" "$nvim_config_dir/.tmux.conf.txt"
+    cp "$HOME/tnsesh.sh" "$nvim_config_dir/tnsesh.sh.txt"
+    cp "$HOME/tsesh.sh" "$nvim_config_dir/tsesh.sh.txt"
+    
+    # Delete the old file
+    rm -f "$nvim_config_dir/tsesh.sh.text"
+    
+    echo "Files synced to nvim config directory"
+}
+
+confpull() {
+    local nvim_config_dir="$HOME/.config/nvim"
+    
+    # Copy and rename files back to home directory
+    cp "$nvim_config_dir/zshrc.txt" "$HOME/.zshrc"
+    cp "$nvim_config_dir/.tmux.conf.txt" "$HOME/.tmux.conf"
+    cp "$nvim_config_dir/tnsesh.sh.txt" "$HOME/tnsesh.sh"
+    cp "$nvim_config_dir/tsesh.sh.txt" "$HOME/tsesh.sh"
+    
+    echo "Files restored from nvim config directory"
+}
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 
