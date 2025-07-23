@@ -36,3 +36,5 @@ end, { noremap = true, silent = true })
 vim.keymap.set("i", "<C-Del>", function()
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-o>dw", true, true, true), "n", true)
 end, { noremap = true, silent = true })
+
+vim.keymap.set("n", "<leader>r", "<Cmd>FzfLua resume<CR>", { noremap = true, silent = true, desc = "FZF Resume" })

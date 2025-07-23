@@ -102,6 +102,16 @@ d8888b. d8888b.  .d88b.  db    db d88888b d8888b. d8888b. .d8888.    db  .d88b. 
       -- grep = {
       --   rg_opts = "--column --line-number --no-heading --color=always --smart-case -g '!node_modules/'",
       -- },
+      keymap = {
+        fzf = {
+          ["ctrl-k"] = "preview-up",
+          ["ctrl-j"] = "preview-down",
+        },
+        builtin = {
+          ["<C-Up>"] = "preview-page-up",
+          ["<C-Down>"] = "preview-page-down",
+        },
+      },
       winopts = {
         height = 0.85,
         width = 0.9,
