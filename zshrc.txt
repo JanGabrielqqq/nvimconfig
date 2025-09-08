@@ -76,6 +76,9 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
+# Set user variable for Windows paths
+user="Work"
+
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
@@ -162,7 +165,168 @@ confpull() {
     echo "Files restored from nvim config directory"
 }
 
+# Windows file copy utility functions
+wincp() {
+    local source_type=""
+    local source_path=""
+    local selected_file=""
+    local dest_dir=""
+    
+    # Show options for source directory
+    echo "Select source directory:"
+    echo "1) Downloads"
+    echo "2) Documents"
+    read -r "choice?Enter choice (1-2): "
+    
+    case $choice in
+        1)
+            source_type="Downloads"
+            source_path="/mnt/c/Users/$user/Downloads"
+            ;;
+        2)
+            source_type="Documents"
+            source_path="/mnt/c/Users/$user/Documents"
+            ;;
+        *)
+            echo "Invalid choice"
+            return 1
+            ;;
+    esac
+    
+    # Check if source directory exists
+    if [[ ! -d "$source_path" ]]; then
+        echo "Source directory $source_path does not exist"
+        return 1
+    fi
+    
+    # Select file/folder from source using fzf
+    echo "Selecting from $source_type..."
+    selected_file=$(find "$source_path" -maxdepth 3 -type f -o -type d | sed "s|$source_path/||" | fzf --height=20 --preview="ls -la '$source_path/{}'")
+    
+    if [[ -z "$selected_file" ]]; then
+        echo "No file selected"
+        return 1
+    fi
+    
+    # Select destination folder in ~/Projects using fzf
+    echo "Select destination in ~/Projects..."
+    dest_dir=$(find ~/Projects -type d | fzf --height=20 --preview="ls -la {}")
+    
+    if [[ -z "$dest_dir" ]]; then
+        echo "No destination selected"
+        return 1
+    fi
+    
+    # Copy the file/folder
+    local full_source_path="$source_path/$selected_file"
+    echo "Copying '$selected_file' to '$dest_dir'"
+    
+    if [[ -d "$full_source_path" ]]; then
+        cp -r "$full_source_path" "$dest_dir/"
+    else
+        cp "$full_source_path" "$dest_dir/"
+    fi
+    
+    if [[ $? -eq 0 ]]; then
+        echo "✓ Successfully copied '$selected_file' to '$dest_dir'"
+    else
+        echo "✗ Failed to copy file"
+        return 1
+    fi
+}
+
+# Shortcut functions for specific directories
+wincpd() {
+    local source_path="/mnt/c/Users/$user/Downloads"
+    local selected_file=""
+    local dest_dir=""
+    
+    if [[ ! -d "$source_path" ]]; then
+        echo "Downloads directory $source_path does not exist"
+        return 1
+    fi
+    
+    selected_file=$(find "$source_path" -maxdepth 3 -type f -o -type d | sed "s|$source_path/||" | fzf --height=20 --preview="ls -la '$source_path/{}'")
+    
+    if [[ -z "$selected_file" ]]; then
+        echo "No file selected"
+        return 1
+    fi
+    
+    dest_dir=$(find ~/Projects -type d | fzf --height=20 --preview="ls -la {}")
+    
+    if [[ -z "$dest_dir" ]]; then
+        echo "No destination selected"
+        return 1
+    fi
+    
+    local full_source_path="$source_path/$selected_file"
+    echo "Copying '$selected_file' to '$dest_dir'"
+    
+    if [[ -d "$full_source_path" ]]; then
+        cp -r "$full_source_path" "$dest_dir/"
+    else
+        cp "$full_source_path" "$dest_dir/"
+    fi
+    
+    if [[ $? -eq 0 ]]; then
+        echo "✓ Successfully copied '$selected_file' to '$dest_dir'"
+    else
+        echo "✗ Failed to copy file"
+        return 1
+    fi
+}
+
+wincpdoc() {
+    local source_path="/mnt/c/Users/$user/Documents"
+    local selected_file=""
+    local dest_dir=""
+    
+    if [[ ! -d "$source_path" ]]; then
+        echo "Documents directory $source_path does not exist"
+        return 1
+    fi
+    
+    selected_file=$(find "$source_path" -maxdepth 3 -type f -o -type d | sed "s|$source_path/||" | fzf --height=20 --preview="ls -la '$source_path/{}'")
+    
+    if [[ -z "$selected_file" ]]; then
+        echo "No file selected"
+        return 1
+    fi
+    
+    dest_dir=$(find ~/Projects -type d | fzf --height=20 --preview="ls -la {}")
+    
+    if [[ -z "$dest_dir" ]]; then
+        echo "No destination selected"
+        return 1
+    fi
+    
+    local full_source_path="$source_path/$selected_file"
+    echo "Copying '$selected_file' to '$dest_dir'"
+    
+    if [[ -d "$full_source_path" ]]; then
+        cp -r "$full_source_path" "$dest_dir/"
+    else
+        cp "$full_source_path" "$dest_dir/"
+    fi
+    
+    if [[ $? -eq 0 ]]; then
+        echo "✓ Successfully copied '$selected_file' to '$dest_dir'"
+    else
+        echo "✗ Failed to copy file"
+        return 1
+    fi
+}
+
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
+
+# pnpm
+export PNPM_HOME="/home/gab/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
