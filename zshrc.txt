@@ -155,6 +155,30 @@ confpush() {
 
 confpull() {
     local nvim_config_dir="$HOME/.config/nvim"
+    local backup_dir="$HOME/.config_backups"
+    local timestamp=$(date +"%Y%m%d_%H%M%S")
+    
+    # Create backup directory if it doesn't exist
+    mkdir -p "$backup_dir"
+    
+    # Create backups before overwriting
+    echo "Creating backups..."
+    if [[ -f "$HOME/.zshrc" ]]; then
+        cp "$HOME/.zshrc" "$backup_dir/.zshrc.backup.$timestamp"
+        echo "Backed up .zshrc to $backup_dir/.zshrc.backup.$timestamp"
+    fi
+    if [[ -f "$HOME/.tmux.conf" ]]; then
+        cp "$HOME/.tmux.conf" "$backup_dir/.tmux.conf.backup.$timestamp"
+        echo "Backed up .tmux.conf to $backup_dir/.tmux.conf.backup.$timestamp"
+    fi
+    if [[ -f "$HOME/tnsesh.sh" ]]; then
+        cp "$HOME/tnsesh.sh" "$backup_dir/tnsesh.sh.backup.$timestamp"
+        echo "Backed up tnsesh.sh to $backup_dir/tnsesh.sh.backup.$timestamp"
+    fi
+    if [[ -f "$HOME/tsesh.sh" ]]; then
+        cp "$HOME/tsesh.sh" "$backup_dir/tsesh.sh.backup.$timestamp"
+        echo "Backed up tsesh.sh to $backup_dir/tsesh.sh.backup.$timestamp"
+    fi
     
     # Copy and rename files back to home directory
     cp "$nvim_config_dir/zshrc.txt" "$HOME/.zshrc"
@@ -163,6 +187,96 @@ confpull() {
     cp "$nvim_config_dir/tsesh.sh.txt" "$HOME/tsesh.sh"
     
     echo "Files restored from nvim config directory"
+    echo "Backups saved to $backup_dir with timestamp $timestamp"
+    
+    # Show diff of changes
+    echo -e "\n=== CHANGES SUMMARY ==="
+    local files_to_diff=(
+        ".zshrc:$backup_dir/.zshrc.backup.$timestamp"
+        ".tmux.conf:$backup_dir/.tmux.conf.backup.$timestamp"
+        "tnsesh.sh:$backup_dir/tnsesh.sh.backup.$timestamp"
+        "tsesh.sh:$backup_dir/tsesh.sh.backup.$timestamp"
+    )
+    
+    for file_pair in "${files_to_diff[@]}"; do
+        local current_file="${file_pair%%:*}"
+        local backup_file="${file_pair##*:}"
+        local full_current_path="$HOME/$current_file"
+        
+        if [[ -f "$backup_file" && -f "$full_current_path" ]]; then
+            echo -e "\n--- Changes in $current_file ---"
+            if diff -q "$backup_file" "$full_current_path" >/dev/null 2>&1; then
+                echo "No changes detected"
+            else
+                diff -u "$backup_file" "$full_current_path" | head -20
+                local line_count=$(diff -u "$backup_file" "$full_current_path" | wc -l)
+                if [[ $line_count -gt 20 ]]; then
+                    echo "... (showing first 20 lines of diff, $line_count total lines)"
+                fi
+            fi
+        fi
+    done
+    echo "========================"
+}
+
+confreset() {
+    local backup_dir="$HOME/.config_backups"
+    
+    # Check if backup directory exists
+    if [[ ! -d "$backup_dir" ]]; then
+        echo "No backup directory found at $backup_dir"
+        return 1
+    fi
+    
+    # List available backups
+    echo "Available backup timestamps:"
+    ls "$backup_dir" | grep -E '\.(backup\.[0-9]{8}_[0-9]{6})$' | sed 's/.*\.backup\.\([0-9_]*\)$/\1/' | sort -u | nl
+    
+    if [[ $(ls "$backup_dir"/*.backup.* 2>/dev/null | wc -l) -eq 0 ]]; then
+        echo "No backups found in $backup_dir"
+        return 1
+    fi
+    
+    # Get user selection
+    read -r "timestamp?Enter timestamp to restore (format: YYYYMMDD_HHMMSS): "
+    
+    if [[ ! "$timestamp" =~ ^[0-9]{8}_[0-9]{6}$ ]]; then
+        echo "Invalid timestamp format. Use YYYYMMDD_HHMMSS"
+        return 1
+    fi
+    
+    # Check which backup files exist for this timestamp
+    local files_to_restore=(
+        ".zshrc:$backup_dir/.zshrc.backup.$timestamp"
+        ".tmux.conf:$backup_dir/.tmux.conf.backup.$timestamp"
+        "tnsesh.sh:$backup_dir/tnsesh.sh.backup.$timestamp"
+        "tsesh.sh:$backup_dir/tsesh.sh.backup.$timestamp"
+    )
+    
+    echo "Restoring files from backup timestamp: $timestamp"
+    local restored_count=0
+    
+    for file_pair in "${files_to_restore[@]}"; do
+        local current_file="${file_pair%%:*}"
+        local backup_file="${file_pair##*:}"
+        local full_current_path="$HOME/$current_file"
+        
+        if [[ -f "$backup_file" ]]; then
+            cp "$backup_file" "$full_current_path"
+            echo "✓ Restored $current_file"
+            ((restored_count++))
+        else
+            echo "✗ Backup not found: $backup_file"
+        fi
+    done
+    
+    if [[ $restored_count -gt 0 ]]; then
+        echo "Successfully restored $restored_count file(s) from backup $timestamp"
+        echo "Note: You may need to reload your shell or run 'source ~/.zshrc' for changes to take effect"
+    else
+        echo "No files were restored"
+        return 1
+    fi
 }
 
 # Windows file copy utility functions
