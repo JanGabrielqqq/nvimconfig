@@ -28,6 +28,12 @@ vim.api.nvim_set_keymap(
   { noremap = true, silent = true, desc = "No AutoCommand Save All Buffer" }
 )
 
+vim.keymap.set("n", "<leader>yf", function()
+  local path = vim.fn.expand("%:.")
+  vim.fn.setreg("+", path)
+  vim.notify("Copied to clipboard: " .. path)
+end, { desc = "Copy file path" })
+
 --  NOTE: INSERT MODE
 vim.keymap.set("i", "<C-H>", function()
   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-o>db", true, true, true), "n", true)
