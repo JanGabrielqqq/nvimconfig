@@ -135,9 +135,70 @@ ddd() {
     fi
 }
 
+confdiff() {
+    local nvim_config_dir="$HOME/.config/nvim"
+    local filter="$1"
+    local files=(
+        ".zshrc:zshrc.txt"
+        ".tmux.conf:.tmux.conf.txt"
+        "tnsesh.sh:tnsesh.sh.txt"
+        "tsesh.sh:tsesh.sh.txt"
+    )
+    local printed_diff=0
+    local compared=0
+
+    for spec in "${files[@]}"; do
+        local local_name="${spec%%:*}"
+        local mirror_name="${spec##*:}"
+        local label="${local_name##*/}"
+
+        if [[ -n "$filter" && "$filter" != "$label" && "$filter" != "$local_name" && "$filter" != "${mirror_name%.txt}" ]]; then
+            continue
+        fi
+
+        local local_path="$HOME/$local_name"
+        local mirror_path="$nvim_config_dir/$mirror_name"
+
+        if [[ ! -f "$local_path" || ! -f "$mirror_path" ]]; then
+            if [[ ! -f "$local_path" ]]; then
+                echo "Skipping $label (missing local copy at $local_path)"
+            else
+                echo "Skipping $label (missing nvim copy at $mirror_path)"
+            fi
+            continue
+        fi
+
+        compared=1
+
+        if diff -q "$mirror_path" "$local_path" >/dev/null 2>&1; then
+            if [[ -n "$filter" ]]; then
+                echo "No changes for $label"
+            fi
+            continue
+        fi
+
+        printed_diff=1
+        echo
+        echo "--- $label (nvim copy vs local) ---"
+        if command -v git >/dev/null 2>&1; then
+            git --no-pager diff --no-index --color=always "$mirror_path" "$local_path"
+        else
+            diff -u "$mirror_path" "$local_path"
+        fi
+    done
+
+    if (( ! printed_diff )); then
+        if (( compared )); then
+            echo "No differences detected"
+        else
+            echo "No files to compare"
+        fi
+    fi
+}
+
 confpush() {
     local nvim_config_dir="$HOME/.config/nvim"
-    
+
     # Create nvim config directory if it doesn't exist
     mkdir -p "$nvim_config_dir"
     
