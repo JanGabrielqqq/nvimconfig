@@ -106,6 +106,7 @@ d8888b. d8888b.  .d88b.  db    db d88888b d8888b. d8888b. .d8888.    db  .d88b. 
         fzf = {
           ["ctrl-k"] = "preview-up",
           ["ctrl-j"] = "preview-down",
+          ["ctrl-o"] = "select-all+accept",
         },
         builtin = {
           ["<C-Up>"] = "preview-page-up",
