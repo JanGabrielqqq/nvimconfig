@@ -148,7 +148,11 @@ return {
     end,
   },
   {
-    "williamboman/mason.nvim",
+    "mason-org/mason.nvim",
+    build = function()
+      -- LazyVim's default build hook runs :MasonUpdate in headless mode.
+      -- That path is currently failing here, while Mason still refreshes on startup.
+    end,
     opts_extend = { "ensure_installed" },
     opts = {
       ensure_installed = {
