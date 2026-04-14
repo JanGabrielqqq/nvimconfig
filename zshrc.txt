@@ -541,7 +541,7 @@ export NVM_DIR="$HOME/.nvm"
 
 
 # pnpm
-export PNPM_HOME="/home/gab/.local/share/pnpm"
+export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
@@ -551,4 +551,4 @@ export PATH="$HOME/.local/bin:$PATH"
 
 
 # opencode
-export PATH=/home/gab/.opencode/bin:$PATH
+export PATH="$HOME/.opencode/bin:$PATH"
