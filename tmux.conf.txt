@@ -10,3 +10,24 @@ bind S-Right swap-window -t +1
 bind S-Left swap-window -t -1
 run '~/.tmux/plugins/tpm/tpm'
 
+
+# Enable true color
+set -g default-terminal "tmux-256color"
+set -ga terminal-overrides ",*:Tc"
+
+# Status bar
+set -g status-style "bg=#1b1e28,fg=#a6accd"
+
+set -g status-left "#[fg=#5de4c7]tmux "
+set -g status-right "#[fg=#89ddff]%Y-%m-%d %H:%M"
+
+# Window tabs
+set -g window-status-format "#[fg=#444a73] #I:#W "
+set -g window-status-current-format "#[fg=#1b1e28,bg=#89ddff,bold] #I:#W "
+
+# Pane borders
+set -g pane-border-style "fg=#444a73"
+set -g pane-active-border-style "fg=#89ddff"
+
+# Message styling
+set -g message-style "bg=#1b1e28,fg=#fffac2"

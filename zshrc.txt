@@ -110,6 +110,18 @@ alias tmconf="nvim ~/.config/tmux/tmux.conf"
 alias cls="clear"
 alias cc="clear"
 
+pp() {
+    local staged_files
+    staged_files=("${(@f)$(git diff --cached --name-only --diff-filter=ACMR)}")
+
+    if (( ${#staged_files[@]} == 0 )); then
+        echo "No staged files to format."
+        return 0
+    fi
+
+    prettier --write --ignore-unknown "${staged_files[@]}" && git add "${staged_files[@]}"
+}
+
 tn() {
   ~/tnsesh.sh "$1"
 }
