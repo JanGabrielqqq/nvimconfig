@@ -20,6 +20,10 @@ return {
     opts = {
       scroll = { enabled = false },
       dashboard = {
+        wo = {
+          cursorline = true,
+          winhighlight = "Normal:SnacksDashboardNormal,NormalFloat:SnacksDashboardNormal,CursorLine:TelescopeSelection",
+        },
         preset = {
           header = [[
 d8888b. d8888b.  .d88b.  db    db d88888b d8888b. d8888b. .d8888.    db  .d88b.       j88D  
