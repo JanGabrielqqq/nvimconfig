@@ -215,20 +215,20 @@ gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com || true
 echo "Installing fonts for Poimandres-style GNOME setup..."
 
 sudo dnf install -y \
-  ibm-plex-sans-fonts \
-  jetbrains-mono-fonts
+  google-roboto-fonts \
+  vercel-geist-mono-fonts
 
 # Refresh font cache
 fc-cache -fv
 
-# IBM Plex Sans keeps the desktop UI clean and soft while JetBrains Mono
+# Roboto keeps the desktop UI clean and soft while Geist Mono
 # remains the coding/terminal font that fits the Poimandres palette well.
 if command -v gsettings &>/dev/null; then
   echo "Applying GNOME font settings..."
-  gsettings set org.gnome.desktop.interface font-name "IBM Plex Sans 11" || true
-  gsettings set org.gnome.desktop.interface document-font-name "IBM Plex Sans 11" || true
-  gsettings set org.gnome.desktop.interface monospace-font-name "JetBrains Mono 11" || true
-  gsettings set org.gnome.desktop.wm.preferences titlebar-font "IBM Plex Sans Bold 11" || true
+  gsettings set org.gnome.desktop.interface font-name "Roboto 11" || true
+  gsettings set org.gnome.desktop.interface document-font-name "Roboto 11" || true
+  gsettings set org.gnome.desktop.interface monospace-font-name "Geist Mono 11" || true
+  gsettings set org.gnome.desktop.wm.preferences titlebar-font "Roboto Bold 11" || true
 fi
 
 # -----------------------------
@@ -246,7 +246,7 @@ cat >"$GHOSTTY_CONFIG" <<'EOF'
 background = #1b1e28
 foreground = #a6accd
 
-font-family = "JetBrains Mono"
+font-family = "Geist Mono"
 
 cursor-color = #add7ff
 
@@ -387,6 +387,10 @@ fi
 if ! command -v opencode &> /dev/null; then
   echo "Installing OpenCode..."
   curl -fsSL https://opencode.ai/install | bash
+fi
+
+if ! grep -q 'export PATH="$HOME/.opencode/bin:$PATH"' "$HOME/.zshrc"; then
+  echo 'export PATH="$HOME/.opencode/bin:$PATH"' >>"$HOME/.zshrc"
 fi
 # OpenCode provides an install script via curl :contentReference[oaicite:4]{index=4}
 
