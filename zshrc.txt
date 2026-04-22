@@ -137,6 +137,122 @@ t() {
     # fi
 }
 
+tvpn() {
+    local mfa="$1"
+    local session_name="ovpn"
+    local profile="$HOME/Downloads/profile-userlocked.ovpn"
+    local username="slt.support13"
+    local password_file="$HOME/.config/tvpn/password"
+    local prompt_wait_seconds="120"
+
+    if [[ -z "$mfa" ]]; then
+        echo "Usage: tvpn <mfa>"
+        return 1
+    fi
+
+    if [[ ! -f "$profile" ]]; then
+        echo "Missing OpenVPN profile: $profile"
+        return 1
+    fi
+
+    if ! command -v tmux >/dev/null 2>&1; then
+        echo "tmux is required but not installed."
+        return 1
+    fi
+
+    if ! command -v openvpn >/dev/null 2>&1; then
+        echo "openvpn is required but not installed."
+        return 1
+    fi
+
+    if tmux has-session -t "$session_name" 2>/dev/null; then
+        local pane_pid
+        pane_pid=$(tmux list-panes -t "$session_name" -F '#{pane_pid}' 2>/dev/null | head -n 1)
+
+        if [[ -n "$pane_pid" ]] && pgrep -P "$pane_pid" openvpn >/dev/null 2>&1; then
+            if [[ -n "$TMUX" ]]; then
+                tmux switch-client -t "$session_name"
+            else
+                tmux attach-session -t "$session_name"
+            fi
+            return
+        fi
+
+        tmux kill-session -t "$session_name" 2>/dev/null
+    fi
+
+    local password
+
+    if [[ ! -f "$password_file" ]]; then
+        echo "Missing VPN password file: $password_file"
+        echo "Set it up once with:"
+        echo
+        echo "mkdir -p ~/.config/tvpn"
+        echo "chmod 700 ~/.config/tvpn"
+        echo "printf '%s\\n' 'YOUR_PASSWORD' > ~/.config/tvpn/password"
+        echo "chmod 600 ~/.config/tvpn/password"
+        return 1
+    fi
+
+    local password_mode
+    password_mode=$(stat -c '%a' "$password_file" 2>/dev/null)
+    if [[ "$password_mode" != "600" ]]; then
+        echo "VPN password file must have permission 600: $password_file"
+        return 1
+    fi
+
+    password=$(<"$password_file")
+
+    if [[ -z "$password" ]]; then
+        echo "VPN password is required."
+        return 1
+    fi
+
+    local tmux_cmd
+    tmux_cmd="sudo openvpn --config \"$profile\"; status=\$?; echo; echo \"OpenVPN exited with status \$status\"; exec zsh"
+
+    if ! tmux new-session -d -s "$session_name" "$tmux_cmd"; then
+        echo "Failed to start tmux session: $session_name"
+        return 1
+    fi
+
+    (
+        local deadline=$(( EPOCHSECONDS + prompt_wait_seconds ))
+        local pane_text=""
+        local sent_user=0
+        local sent_pass=0
+        local sent_mfa=0
+
+        while (( EPOCHSECONDS < deadline )); do
+            pane_text=$(tmux capture-pane -pt "$session_name" 2>/dev/null) || exit 0
+
+            if (( ! sent_user )) && [[ "$pane_text" == *"Enter Auth Username:"* ]]; then
+                tmux send-keys -t "$session_name" "$username" Enter
+                sent_user=1
+            fi
+
+            if (( sent_user && ! sent_pass )) && [[ "$pane_text" == *"Enter Auth Password:"* ]]; then
+                tmux send-keys -t "$session_name" "$password" Enter
+                sent_pass=1
+            fi
+
+            if (( sent_pass && ! sent_mfa )) && [[ "$pane_text" == *"CHALLENGE: Enter Authenticator Code"* ]]; then
+                tmux send-keys -t "$session_name" "$mfa" Enter
+                sent_mfa=1
+                exit 0
+            fi
+
+            sleep 0.2
+        done
+    ) >/dev/null 2>&1 &
+
+    if [[ -n "$TMUX" ]]; then
+        tmux switch-client -t "$session_name"
+    else
+        tmux attach-session -t "$session_name"
+    fi
+}
+
 ddd() {
     local dir
     dir=$(fdfind --type d . ~/Projects | fzf)
@@ -552,3 +668,4 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # opencode
 export PATH="$HOME/.opencode/bin:$PATH"
+export COLORTERM=truecolor
